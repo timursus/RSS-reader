@@ -5,3 +5,5 @@
 ### JS training project for hexlet.io (lvl3)
 
 RSS news feed with automatic updates.
+
+Try it: https://rss-reader-kappa.now.sh
