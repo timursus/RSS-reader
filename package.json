@@ -1,6 +1,6 @@
 {
   "name": "rss-reader",
-  "version": "0.1.0",
+  "version": "0.1.5",
   "description": "RSS news feed with automatic updates",
   "main": "dist/index.js",
   "scripts": {
@@ -36,6 +36,7 @@
     "eslint-plugin-babel": "^5.3.0",
     "eslint-plugin-import": "^2.20.2",
     "html-webpack-plugin": "^4.3.0",
+    "mini-css-extract-plugin": "^0.9.0",
     "style-loader": "^1.2.1",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.11",
@@ -44,6 +45,8 @@
   "dependencies": {
     "bootstrap": "^4.5.0",
     "jquery": "^3.5.1",
-    "popper.js": "^1.16.1"
+    "melanke-watchjs": "^1.5.2",
+    "popper.js": "^1.16.1",
+    "yup": "^0.29.1"
   }
 }

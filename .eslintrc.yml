@@ -2,12 +2,19 @@ env:
   browser: true
   es6: true
   node: true
+
 extends:
   - airbnb-base
-globals:
-  Atomics: readonly
-  SharedArrayBuffer: readonly
+
+plugins:
+  - babel
+
+parser: babel-eslint
+
 parserOptions:
   ecmaVersion: 11
   sourceType: module
-rules: {}
+
+rules:
+  no-console: 0
+  no-param-reassign: 0
