@@ -1,10 +1,10 @@
-devserver:
-	npx webpack-dev-server --open
-
 install:
 	npm ci
 
-dev:
+devserver:
+	npx webpack-dev-server --open
+
+devbuild:
 	rm -rf dist
 	NODE_ENV=development npx webpack
 

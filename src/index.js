@@ -1,34 +1,35 @@
 import './styles.css';
-import 'bootstrap/js/dist/util';
-import 'bootstrap/js/dist/alert';
 import { string } from 'yup';
-import { watch } from 'melanke-watchjs';
+import render from './view';
 
-const schema = string().url();
+const validateUrl = (url, addedURLs) => {
+  const schema = string()
+    .url()
+    .notOneOf(addedURLs, 'Rss has already been added');
+  return schema.validate(url);
+};
 
 const updateValidationState = (state) => {
-  schema.isValid(state.input.value)
-    .then((isValidUrl) => {
-      if (!isValidUrl) {
-        state.feedback.text = 'Please enter valid URL';
-        state.feedback.error = true;
-      }
-      const alreadyAdded = isValidUrl && state.activeFeeds.includes(state.input.value);
-      if (alreadyAdded) {
-        state.feedback.text = 'RSS already added';
-        state.feedback.error = true;
-      }
-      state.input.valid = isValidUrl && !alreadyAdded;
-      if (state.input.valid) {
-        state.feedback.text = '';
-        state.feedback.error = false;
-      }
+  validateUrl(state.input.value, state.activeFeeds)
+    .then(() => {
+      state.input.valid = true;
+      state.feedback.text = '';
+      state.feedback.error = false;
+    })
+    .catch((err) => {
+      state.input.valid = false;
+      const [error] = err.errors;
+      state.feedback.text = error;
+      state.feedback.error = true;
     });
 };
 
-const run = () => {
-  const rssForm = document.querySelector('.rss-form');
-  const urlInput = rssForm.querySelector('input[name="url"]');
+const main = () => {
+  const elements = {
+    rssForm: document.querySelector('.rss-form'),
+    urlInput: document.querySelector('input[name="url"]'),
+    feedbackElem: document.querySelector('.feedback'),
+  };
 
   const state = {
     activeFeeds: [],
@@ -42,35 +43,21 @@ const run = () => {
     },
   };
 
-  const feedbackElem = document.querySelector('.feedback');
-
-  watch(state.input, 'valid', () => {
-    if (state.input.valid) {
-      urlInput.classList.remove('is-invalid');
-    } else {
-      urlInput.classList.add('is-invalid');
-    }
-  });
-
-  watch(state.feedback, () => {
-    feedbackElem.textContent = state.feedback.text;
-    if (state.feedback.error) {
-      feedbackElem.classList.remove('text-success');
-      feedbackElem.classList.add('text-danger');
-    } else {
-      feedbackElem.classList.remove('text-danger');
-      feedbackElem.classList.add('text-success');
-    }
-  });
-
-  urlInput.addEventListener('input', (e) => {
+  elements.urlInput.addEventListener('input', (e) => {
     state.input.value = e.target.value;
     updateValidationState(state);
   });
 
-  rssForm.addEventListener('submit', (e) => {
+  elements.rssForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    if (state.input.valid) {
+      state.activeFeeds.push(state.input.value);
+      elements.rssForm.reset();
+      state.feedback.text = 'Rss has been loaded';
+    }
   });
+
+  render(state, elements);
 };
 
-run();
+main();
