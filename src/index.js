@@ -6,8 +6,8 @@ import render from './view';
 
 const validateUrl = (url, addedURLs) => {
   const schema = string()
-    .url()
-    .notOneOf(addedURLs, 'Rss has already been added');
+    .url('validationErrors.notValidURL')
+    .notOneOf(addedURLs, 'validationErrors.alreadyAdded');
   return schema.validate(url);
 };
 
@@ -15,14 +15,11 @@ const updateValidationState = (state) => {
   validateUrl(state.input.value, state.addedURLs)
     .then(() => {
       state.input.valid = true;
-      state.feedback.text = '';
-      state.feedback.error = false;
     })
     .catch((err) => {
       state.input.valid = false;
-      const [error] = err.errors;
-      state.feedback.text = error;
-      state.feedback.error = true;
+      const [errorKey] = err.errors;
+      state.input.error = errorKey;
     });
 };
 
@@ -47,43 +44,58 @@ const parse = (data) => {
 const writeToState = (rss, state) => {
   const [feed, posts] = rss;
   const id = uniqueId();
-  state.activeFeeds.push({ ...feed, id });
+  state.content.activeFeeds.push({ ...feed, id });
   const postsWithIDs = posts.map((post) => ({ ...post, id }));
-  state.posts = postsWithIDs.concat(state.posts);
+  state.content.posts = postsWithIDs.concat(state.content.posts);
 };
 
 const proxy = 'https://cors-anywhere.herokuapp.com/';
 
 const generateRSS = (url, state) => {
   const fullURL = proxy.concat(url);
-  return axios.get(fullURL, { timeout: 8000 })
-    .then(({ data }) => parse(data))
-    .then((rss) => writeToState(rss, state));
+  return axios.get(fullURL, { timeout: 7500 })
+    .catch((err) => {
+      state.rssLoading.state = 'networkError';
+      state.rssLoading.error = 'loading.networkError';
+      throw err;
+    })
+    .then(({ data }) => {
+      try {
+        const rss = parse(data);
+        writeToState(rss, state);
+      } catch (err) {
+        state.rssLoading.state = 'parsingError';
+        state.rssLoading.error = 'loading.parsingError';
+        throw err;
+      }
+    });
+};
+
+const elements = {
+  rssForm: document.querySelector('.rss-form'),
+  urlInput: document.querySelector('input[name="url"]'),
+  submitBtn: document.querySelector('button[type="submit"]'),
+  feedback: document.querySelector('.feedback'),
+  feedsList: document.querySelector('.rss-items'),
+  postsList: document.querySelector('.rss-links'),
 };
 
 const main = () => {
-  const elements = {
-    rssForm: document.querySelector('.rss-form'),
-    urlInput: document.querySelector('input[name="url"]'),
-    submitBtn: document.querySelector('button[type="submit"]'),
-    feedbackElem: document.querySelector('.feedback'),
-    feedsList: document.querySelector('.rss-items'),
-    postsList: document.querySelector('.rss-links'),
-  };
-
   const state = {
-    activeFeeds: [],
-    posts: [],
-    addedURLs: [],
+    content: {
+      activeFeeds: [],
+      posts: [],
+    },
     input: {
       value: '',
       valid: true,
-      loading: false,
+      error: '',
     },
-    feedback: {
-      text: '',
-      error: false,
+    rssLoading: {
+      state: '', // loading, success, networkError, parsingError
+      error: '',
     },
+    addedURLs: [],
   };
 
   elements.urlInput.addEventListener('input', (e) => {
@@ -94,22 +106,13 @@ const main = () => {
   elements.rssForm.addEventListener('submit', (e) => {
     e.preventDefault();
     if (state.input.valid) {
-      state.input.loading = true;
+      state.rssLoading.state = 'loading';
       const url = state.input.value;
-      generateRSS(url, state)
-        .then(() => {
-          state.addedURLs.push(url);
-          state.feedback.text = 'Rss has been loaded';
-          state.feedback.error = false;
-          elements.rssForm.reset();
-        })
-        .catch((err) => {
-          state.feedback.text = err;
-          state.feedback.error = true;
-        })
-        .finally(() => {
-          state.input.loading = false;
-        });
+      generateRSS(url, state).then(() => {
+        state.rssLoading.state = 'success';
+        elements.rssForm.reset();
+        state.addedURLs.push(url);
+      });
     }
   });
 

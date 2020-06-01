@@ -1,36 +1,60 @@
+import i18next from 'i18next';
 import { watch } from 'melanke-watchjs';
 
 export default (state, elements) => {
-  const { urlInput, feedbackElem } = elements;
+  const { feedback, feedsList, postsList } = elements;
 
-  watch(state.input, 'valid', () => {
+  i18next.init({
+    lng: 'en',
+    debug: true,
+    resources: {
+      en: {
+        translation: {
+          loading: {
+            success: 'RSS successfully loaded',
+            networkError: 'Network Problems. Try again.',
+            parsingError: 'Doesn\'t look like RSS link',
+          },
+          validationErrors: {
+            notValidURL: 'Please enter a valid URL',
+            alreadyAdded: 'This RSS has already been added',
+          },
+        },
+      },
+    },
+  });
+
+  watch(state.rssLoading, 'state', () => {
+    const loadState = state.rssLoading.state;
+    if (loadState === 'loading') {
+      elements.submitBtn.disabled = true;
+      return;
+    }
+    elements.submitBtn.disabled = false;
+    feedback.textContent = i18next.t(`loading.${loadState}`);
+    if (loadState === 'success') {
+      feedback.className = 'text-success';
+    } else {
+      feedback.className = 'text-danger';
+    }
+  });
+
+  watch(state.input, ['valid', 'error'], () => {
     if (state.input.valid) {
-      urlInput.classList.remove('is-invalid');
+      feedback.textContent = '';
+      elements.urlInput.classList.remove('is-invalid');
     } else {
-      urlInput.classList.add('is-invalid');
+      feedback.textContent = i18next.t(state.input.error);
+      feedback.className = 'text-danger';
+      elements.urlInput.classList.add('is-invalid');
     }
   });
 
-  watch(state.input, 'loading', () => {
-    elements.submitBtn.disabled = state.input.loading;
-  });
-
-  watch(state, 'feedback', () => {
-    feedbackElem.textContent = state.feedback.text;
-    if (state.feedback.error) {
-      feedbackElem.classList.remove('text-success');
-      feedbackElem.classList.add('text-danger');
-    } else {
-      feedbackElem.classList.remove('text-danger');
-      feedbackElem.classList.add('text-success');
-    }
-  });
-
-  watch(state, 'activeFeeds', () => {
-    elements.feedsList.innerHTML = '';
-    state.activeFeeds.forEach(({ feedTitle, feedDescription, id }) => {
+  watch(state.content, 'activeFeeds', () => {
+    feedsList.innerHTML = '';
+    state.content.activeFeeds.forEach(({ feedTitle, feedDescription, id }) => {
       const div = document.createElement('div');
-      elements.feedsList.append(div);
+      feedsList.append(div);
       const a = document.createElement('a');
       div.append(a);
       a.href = id;
@@ -41,18 +65,16 @@ export default (state, elements) => {
     });
   });
 
-  watch(state, 'posts', () => {
-    elements.postsList.innerHTML = '';
-    state.posts.forEach(({ postTitle, postDescription, postLink }) => {
+  watch(state.content, 'posts', () => {
+    postsList.innerHTML = '';
+    state.content.posts.forEach(({ postTitle, postLink }) => {
       const div = document.createElement('div');
-      elements.postsList.append(div);
+      postsList.append(div);
       const a = document.createElement('a');
       div.append(a);
       a.href = postLink;
+      a.target = '_blank';
       a.textContent = postTitle;
-      const p = document.createElement('p');
-      div.append(p);
-      p.textContent = postDescription;
     });
   });
 };
