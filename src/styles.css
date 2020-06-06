@@ -8,3 +8,7 @@ body {
   background-color: #c9f6c9;
   height: 312px;
 }
+
+button[type="submit"] {
+  min-width: 80px;
+}

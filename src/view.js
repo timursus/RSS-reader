@@ -109,7 +109,7 @@ export default (state, elements) => {
 
       const postDescription = document.createElement('p');
       postDescription.className = 'mb-1 text-secondary';
-      postDescription.textContent = description;
+      postDescription.innerHTML = description;
       postContainer.append(postDescription);
 
       const postFooter = document.createElement('div');
