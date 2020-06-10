@@ -58,6 +58,7 @@ export default (state, elements) => {
   });
 
   watch(state.input, ['valid', 'error'], () => {
+    submitBtn.disabled = !state.input.valid;
     if (state.input.valid) {
       feedback.textContent = '';
       elements.urlInput.classList.remove('is-invalid');

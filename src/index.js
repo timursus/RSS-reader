@@ -16,13 +16,12 @@ const validateUrl = (url, addedURLs) => {
   const schema = string()
     .url('validationErrors.notValidURL')
     .notOneOf(addedURLs, 'validationErrors.alreadyAdded');
-  // не смог понять, как обновлять динамически в схеме список добавленных URL - 'addedURLs'.
-  // Правильно ли пересоздавать schema на каждом вызове?
   return schema.validate(url);
 };
 
 const updateValidationState = (state) => {
-  validateUrl(state.input.value, state.addedURLs)
+  const addedURLs = state.content.feeds.map(({ url }) => url);
+  validateUrl(state.input.value, addedURLs)
     .then(() => {
       state.input.valid = true;
     })
@@ -45,7 +44,6 @@ const main = () => {
       error: '',
     },
     rssLoading: '', // loading, success, networkError, parsingError
-    addedURLs: [], // для валидации
   };
 
   elements.urlInput.addEventListener('input', (e) => {
@@ -55,14 +53,11 @@ const main = () => {
 
   elements.rssForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    if (state.input.valid) {
-      state.rssLoading = 'loading';
-      const url = state.input.value;
-      loadNewChannel(url, state).then(() => {
-        state.rssLoading = 'success';
-        state.addedURLs.push(url);
-      });
-    }
+    state.rssLoading = 'loading';
+    const url = state.input.value;
+    loadNewChannel(url, state).then(() => {
+      state.rssLoading = 'success';
+    });
   });
 
   render(state, elements);

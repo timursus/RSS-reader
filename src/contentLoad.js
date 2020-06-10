@@ -49,7 +49,8 @@ export const refresh = (content) => {
   const { feeds, posts } = content;
   const promises = feeds.map((feed) => {
     const { url, id, hash } = feed;
-    return axios.get(url, { timeout: 10000 })
+    const fullURL = proxy.concat(url);
+    return axios.get(fullURL, { timeout: 10000 })
       .then(({ data }) => {
         const freshHash = crc32.str(data);
         if (freshHash === hash) {
@@ -79,7 +80,7 @@ export const loadNewChannel = (url, state) => {
         const [feed, feedPosts] = parse(data);
         const channelId = uniqueId();
         feed.id = channelId;
-        feed.url = fullURL;
+        feed.url = url;
         feed.hash = crc32.str(data);
         state.content.feeds.push(feed);
         const postsWithId = addID(feedPosts, channelId);
