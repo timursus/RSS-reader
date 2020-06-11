@@ -3,15 +3,6 @@ import { string } from 'yup';
 import { loadNewChannel, refresh } from './contentLoad';
 import render from './view';
 
-const elements = {
-  rssForm: document.querySelector('.rss-form'),
-  urlInput: document.querySelector('input[name="url"]'),
-  submitBtn: document.querySelector('button[type="submit"]'),
-  feedback: document.querySelector('.feedback'),
-  feedsList: document.querySelector('.rss-items'),
-  postsList: document.querySelector('.rss-links'),
-};
-
 const validateUrl = (url, addedURLs) => {
   const schema = string()
     .url('validationErrors.notValidURL')
@@ -21,42 +12,53 @@ const validateUrl = (url, addedURLs) => {
 
 const updateValidationState = (state) => {
   const addedURLs = state.content.feeds.map(({ url }) => url);
-  validateUrl(state.input.value, addedURLs)
+  validateUrl(state.rssForm.value, addedURLs)
     .then(() => {
-      state.input.valid = true;
+      state.rssForm.valid = true;
+      state.rssForm.error = '';
     })
     .catch((err) => {
-      state.input.valid = false;
+      state.rssForm.valid = false;
       const [errorKey] = err.errors;
-      state.input.error = errorKey;
+      state.rssForm.error = errorKey;
     });
 };
 
 const main = () => {
+  const elements = {
+    rssForm: document.querySelector('.rss-form'),
+    urlInput: document.querySelector('input[name="url"]'),
+    submitBtn: document.querySelector('button[type="submit"]'),
+    feedback: document.querySelector('.feedback'),
+    feedsList: document.querySelector('.rss-items'),
+    postsList: document.querySelector('.rss-links'),
+  };
+
   const state = {
     content: {
       feeds: [],
       posts: [],
     },
-    input: {
+    rssForm: {
+      state: 'validation', // loading, added, failed
       value: '',
       valid: true,
       error: '',
     },
-    rssLoading: '', // loading, success, networkError, parsingError
   };
 
   elements.urlInput.addEventListener('input', (e) => {
-    state.input.value = e.target.value;
+    state.rssForm.state = 'validation';
+    state.rssForm.value = e.target.value;
     updateValidationState(state);
   });
 
   elements.rssForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    state.rssLoading = 'loading';
-    const url = state.input.value;
+    state.rssForm.state = 'loading';
+    const url = state.rssForm.value;
     loadNewChannel(url, state).then(() => {
-      state.rssLoading = 'success';
+      state.rssForm.state = 'added';
     });
   });
 

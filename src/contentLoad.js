@@ -1,33 +1,9 @@
 import axios from 'axios';
 import uniqueId from 'lodash/uniqueId';
 import crc32 from 'crc-32';
+import parse from './parser';
 
 const proxy = 'https://cors-anywhere.herokuapp.com/';
-
-const parse = (rssString) => {
-  const domparser = new DOMParser();
-  const doc = domparser.parseFromString(rssString, 'text/xml');
-  const feedTitle = doc.querySelector('channel>title').textContent;
-  const feedDescription = doc.querySelector('channel>description').textContent;
-  const feed = {
-    feedTitle, feedDescription,
-  };
-  const postsItems = doc.querySelectorAll('item');
-  const posts = [...postsItems].map((item) => {
-    const title = item.querySelector('title').textContent;
-    const link = item.querySelector('link').textContent;
-    const date = new Date(item.querySelector('pubDate').textContent);
-    const post = {
-      title, link, date, feedTitle,
-    };
-    const descriptionNode = item.querySelector('description');
-    if (descriptionNode) {
-      post.description = descriptionNode.textContent;
-    }
-    return post;
-  });
-  return [feed, posts.reverse()];
-};
 
 const addID = (posts, id) => posts.map((post) => {
   post.feedId = id;
@@ -41,7 +17,7 @@ const getNewPosts = (feedPosts, statePosts) => {
   Сначала написал проверку не всех свеже-скачанных постов, а только верхних,
   по одному, до первого уже добавленного,
   но посты вроде бы не всегда добавляются сверху, значит нужно проверять все.
-  Не уверен, как лучше искать...
+  Не уверен, какой алгоритм опитмальнее...
   */
 };
 
@@ -54,9 +30,9 @@ export const refresh = (content) => {
       .then(({ data }) => {
         const freshHash = crc32.str(data);
         if (freshHash === hash) {
-          return; // избегаем ресурсоемких операций парсинга и фильтрации постов
+          return;
         }
-        const [, feedPosts] = parse(data);
+        const { feedPosts } = parse(data);
         const newPosts = getNewPosts(feedPosts, posts);
         if (newPosts.length > 0) {
           const newPostsWithId = addID(newPosts, id);
@@ -71,23 +47,26 @@ export const refresh = (content) => {
 export const loadNewChannel = (url, state) => {
   const fullURL = proxy.concat(url);
   return axios.get(fullURL, { timeout: 5000 })
-    .catch((err) => {
-      state.rssLoading = 'networkError';
-      throw err;
-    })
     .then(({ data }) => {
-      try {
-        const [feed, feedPosts] = parse(data);
-        const channelId = uniqueId();
-        feed.id = channelId;
-        feed.url = url;
-        feed.hash = crc32.str(data);
-        state.content.feeds.push(feed);
-        const postsWithId = addID(feedPosts, channelId);
-        state.content.posts.push(...postsWithId);
-      } catch (err) {
-        state.rssLoading = 'parsingError';
-        throw err;
+      const { feed, feedPosts } = parse(data);
+      const channelId = uniqueId();
+      feed.id = channelId;
+      feed.url = url;
+      feed.hash = crc32.str(data);
+      state.content.feeds.push(feed);
+      const postsWithId = addID(feedPosts, channelId);
+      state.content.posts.push(...postsWithId);
+    })
+    .catch((err) => {
+      state.rssForm.state = 'failed';
+      if (err.response) {
+        const responseClass = String(err.response.status).slice(0, 1);
+        state.rssForm.error = `loading.networkError.status${responseClass}xx`;
+      } else if (err.request) {
+        state.rssForm.error = 'loading.networkError.timeout';
+      } else {
+        state.rssForm.error = 'loading.parsingError';
       }
+      throw err;
     });
 };
