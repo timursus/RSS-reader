@@ -1,42 +1,12 @@
-import i18next from 'i18next';
 import { watch } from 'melanke-watchjs';
 
-export default (state, elements) => {
+export default (state, elements, t) => {
   const {
     submitBtn,
     feedback,
     feedsList,
     postsList,
   } = elements;
-
-  i18next.init({
-    lng: 'en',
-    debug: true,
-    resources: {
-      en: {
-        translation: {
-          loading: {
-            success: 'RSS successfully loaded',
-            parsingError: 'Sorry, failed to process. Probably, it is not RSS link.',
-            networkError: {
-              timeout: 'Network problems. Please, try again.',
-              status3xx: 'Redirection. Please check your URL.',
-              status4xx: 'Client error. Please check your URL.',
-              status5xx: 'Server error. Please, try again later.',
-            },
-          },
-          validationErrors: {
-            notValidURL: 'Please enter a valid URL',
-            alreadyAdded: 'This RSS has already been added',
-          },
-          addButton: {
-            default: 'Add',
-            loading: ' Loading...',
-          },
-        },
-      },
-    },
-  });
 
   const spinner = document.createElement('span');
   spinner.className = 'spinner-grow spinner-grow-sm';
@@ -51,7 +21,7 @@ export default (state, elements) => {
           feedback.textContent = '';
           elements.urlInput.classList.remove('is-invalid');
         } else {
-          feedback.textContent = i18next.t(state.rssForm.error);
+          feedback.textContent = t(state.rssForm.error);
           feedback.className = 'text-danger';
           elements.urlInput.classList.add('is-invalid');
         }
@@ -59,20 +29,20 @@ export default (state, elements) => {
       }
       case 'loading': {
         submitBtn.disabled = true;
-        submitBtn.textContent = i18next.t('addButton.loading');
+        submitBtn.textContent = t('addButton.loading');
         submitBtn.prepend(spinner);
         break;
       }
       case 'added': {
-        submitBtn.innerText = i18next.t('addButton.default');
-        feedback.textContent = i18next.t('loading.success');
+        submitBtn.innerText = t('addButton.default');
+        feedback.textContent = t('loading.success');
         feedback.className = 'text-success';
         elements.rssForm.reset();
         break;
       }
       case 'failed': {
-        submitBtn.innerText = i18next.t('addButton.default');
-        feedback.textContent = i18next.t(state.rssForm.error);
+        submitBtn.innerText = t('addButton.default');
+        feedback.textContent = t(state.rssForm.error);
         feedback.className = 'text-danger';
         break;
       }
