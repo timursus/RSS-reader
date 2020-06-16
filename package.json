@@ -1,6 +1,6 @@
 {
   "name": "rss-reader",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "RSS news feed with automatic updates",
   "main": "dist/index.js",
   "scripts": {
@@ -31,6 +31,7 @@
     "@babel/preset-env": "^7.9.6",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.1.0",
+    "copy-webpack-plugin": "^6.0.2",
     "css-loader": "^3.5.3",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.1.0",
