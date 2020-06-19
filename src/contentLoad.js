@@ -56,17 +56,5 @@ export const loadNewChannel = (url, state) => {
       state.content.feeds.push(feed);
       const postsWithId = addID(feedPosts, channelId);
       state.content.posts.push(...postsWithId);
-    })
-    .catch((err) => {
-      state.rssForm.state = 'failed';
-      if (err.response) {
-        const responseClass = String(err.response.status).slice(0, 1);
-        state.rssForm.error = `loading.networkError.status${responseClass}xx`;
-      } else if (err.request) {
-        state.rssForm.error = 'loading.networkError.timeout';
-      } else {
-        state.rssForm.error = 'loading.parsingError';
-      }
-      throw err;
     });
 };

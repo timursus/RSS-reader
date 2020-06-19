@@ -64,9 +64,22 @@ export default () => {
     e.preventDefault();
     state.rssForm.state = 'loading';
     const url = state.rssForm.value;
-    loadNewChannel(url, state).then(() => {
-      state.rssForm.state = 'added';
-    });
+    loadNewChannel(url, state)
+      .then(() => {
+        state.rssForm.state = 'added';
+      })
+      .catch((err) => {
+        state.rssForm.state = 'failed';
+        if (err.response) {
+          const responseClass = String(err.response.status).slice(0, 1);
+          state.rssForm.error = `loading.networkError.status${responseClass}xx`;
+        } else if (err.request) {
+          state.rssForm.error = 'loading.networkError.timeout';
+        } else {
+          state.rssForm.error = 'loading.parsingError';
+        }
+        throw err;
+      });
   });
 
   refresh(state.content);
