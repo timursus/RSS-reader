@@ -1,5 +1,6 @@
 import { string } from 'yup';
 import i18next from 'i18next';
+import resources from './locales';
 import { loadNewChannel, refresh } from './contentLoad';
 import render from './view';
 
@@ -50,30 +51,7 @@ export default () => {
   i18next.init({
     lng: 'en',
     debug: true,
-    resources: {
-      en: {
-        translation: {
-          loading: {
-            success: 'RSS successfully loaded',
-            parsingError: 'Sorry, failed to process. Probably, it is not RSS link.',
-            networkError: {
-              timeout: 'Network problems. Please, try again.',
-              status3xx: 'Redirection network error. Please check your URL.',
-              status4xx: 'Client network error. Please check your URL.',
-              status5xx: 'Server error. Please, try again later.',
-            },
-          },
-          validationErrors: {
-            notValidURL: 'Please enter a valid URL',
-            alreadyAdded: 'This RSS has already been added',
-          },
-          addButton: {
-            default: 'Add',
-            loading: ' Loading...',
-          },
-        },
-      },
-    },
+    resources,
   }).then((t) => render(state, elements, t));
 
   elements.urlInput.addEventListener('input', (e) => {
