@@ -1,6 +1,6 @@
-export default (rssString) => {
+export default (rss) => {
   const domparser = new DOMParser();
-  const doc = domparser.parseFromString(rssString, 'text/xml');
+  const doc = domparser.parseFromString(rss, 'text/xml');
   const feedTitle = doc.querySelector('channel>title').textContent;
   const feedDescription = doc.querySelector('channel>description').textContent;
   const feed = {
