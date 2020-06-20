@@ -7,7 +7,7 @@ export default (rss) => {
     feedTitle, feedDescription,
   };
   const postsItems = doc.querySelectorAll('item');
-  const posts = [...postsItems].map((item) => {
+  const feedPosts = [...postsItems].map((item) => {
     const title = item.querySelector('title').textContent;
     const link = item.querySelector('link').textContent;
     const date = new Date(item.querySelector('pubDate').textContent);
@@ -20,6 +20,5 @@ export default (rss) => {
     }
     return post;
   });
-  const feedPosts = posts.reverse();
   return { feed, feedPosts };
 };

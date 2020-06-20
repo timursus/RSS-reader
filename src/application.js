@@ -46,6 +46,9 @@ export default () => {
       valid: true,
       error: '',
     },
+    rssList: {
+      lastRenderedPostId: 0,
+    },
   };
 
   i18next.init({
@@ -82,5 +85,5 @@ export default () => {
       });
   });
 
-  refresh(state.content);
+  refresh(state);
 };

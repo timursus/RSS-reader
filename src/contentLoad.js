@@ -1,28 +1,21 @@
 import axios from 'axios';
 import uniqueId from 'lodash/uniqueId';
+import get from 'lodash/get';
+import last from 'lodash/last';
+import differenceBy from 'lodash/differenceBy';
 import crc32 from 'crc-32';
 import parse from './parser';
 
 const proxy = 'https://cors-anywhere.herokuapp.com/';
 
-const addID = (posts, id) => posts.map((post) => {
-  post.feedId = id;
+const addID = (posts, channelId) => posts.map((post) => {
+  post.id = uniqueId();
+  post.feedId = channelId;
   return post;
 });
 
-const getNewPosts = (feedPosts, statePosts) => {
-  const isNew = ({ link: postLink }) => !statePosts.some(({ link }) => link === postLink);
-  return feedPosts.filter(isNew);
-  /*
-  Сначала написал проверку не всех свеже-скачанных постов, а только верхних,
-  по одному, до первого уже добавленного,
-  но посты вроде бы не всегда добавляются сверху, значит нужно проверять все.
-  Не уверен, какой алгоритм опитмальнее...
-  */
-};
-
-export const refresh = (content) => {
-  const { feeds, posts } = content;
+export const refresh = (state) => {
+  const { feeds, posts } = state.content;
   const promises = feeds.map((feed) => {
     const { url, id, hash } = feed;
     const fullURL = proxy.concat(url);
@@ -33,15 +26,16 @@ export const refresh = (content) => {
           return;
         }
         const { feedPosts } = parse(data);
-        const newPosts = getNewPosts(feedPosts, posts);
+        const newPosts = differenceBy(feedPosts, posts, 'link');
         if (newPosts.length > 0) {
-          const newPostsWithId = addID(newPosts, id);
+          state.rssList.lastRenderedPostId = last(posts).id;
+          const newPostsWithId = addID(newPosts.reverse(), id);
           posts.push(...newPostsWithId);
         }
         feed.hash = freshHash;
       });
   });
-  Promise.all(promises).finally(() => setTimeout(refresh, 5000, content));
+  Promise.all(promises).finally(() => setTimeout(refresh, 5000, state));
 };
 
 export const loadNewChannel = (url, state) => {
@@ -54,7 +48,8 @@ export const loadNewChannel = (url, state) => {
       feed.url = url;
       feed.hash = crc32.str(data);
       state.content.feeds.push(feed);
-      const postsWithId = addID(feedPosts, channelId);
+      state.rssList.lastRenderedPostId = get(last(state.content.posts), 'id', 0);
+      const postsWithId = addID(feedPosts.reverse(), channelId);
       state.content.posts.push(...postsWithId);
     });
 };

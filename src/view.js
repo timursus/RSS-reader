@@ -1,4 +1,5 @@
 import { watch } from 'melanke-watchjs';
+import findIndex from 'lodash/findIndex';
 
 export default (state, elements, t) => {
   const {
@@ -70,10 +71,10 @@ export default (state, elements, t) => {
     });
   });
 
-  let renderedPostsCount = 0;
-
   watch(state.content, 'posts', () => {
-    const newPosts = state.content.posts.slice(renderedPostsCount);
+    const { lastRenderedPostId } = state.rssList;
+    const lastRenderedIndex = findIndex(state.content.posts, ({ id }) => id === lastRenderedPostId);
+    const newPosts = state.content.posts.slice(lastRenderedIndex + 1);
     newPosts.forEach((post) => {
       const {
         title, link, date, feedTitle, description = '',
@@ -105,6 +106,5 @@ export default (state, elements, t) => {
       postFooter.append(sourseFeed);
       postContainer.append(postFooter);
     });
-    renderedPostsCount += newPosts.length;
   });
 };
