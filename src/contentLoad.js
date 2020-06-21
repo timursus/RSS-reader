@@ -48,7 +48,7 @@ export const loadNewChannel = (url, state) => {
       feed.url = url;
       feed.hash = crc32.str(data);
       state.content.feeds.push(feed);
-      state.rssList.lastRenderedPostId = get(last(state.content.posts), 'id', 0);
+      state.rssList.lastRenderedPostId = get(last(state.content.posts), 'id', null);
       const postsWithId = addID(feedPosts.reverse(), channelId);
       state.content.posts.push(...postsWithId);
     });

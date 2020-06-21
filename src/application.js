@@ -49,13 +49,16 @@ export default () => {
     },
     rssList: {
       lastRenderedPostId: null,
-      activeFeed: 'all',
+      feedSelection: {
+        enabled: false,
+        show: 'all',
+      },
     },
   };
 
   const changeActiveFeed = (e) => {
     e.preventDefault();
-    state.rssList.activeFeed = e.currentTarget.hash.slice(1);
+    state.rssList.feedSelection.show = e.currentTarget.hash.slice(1);
   };
 
   i18next.init({
@@ -77,6 +80,9 @@ export default () => {
     loadNewChannel(url, state)
       .then(() => {
         state.rssForm.state = 'added';
+        if (state.content.feeds.length === 2) {
+          state.rssList.feedSelection.enabled = true;
+        }
       })
       .catch((err) => {
         state.rssForm.state = 'failed';

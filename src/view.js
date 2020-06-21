@@ -59,6 +59,9 @@ export default (state, elements, changeActiveFeed, t) => {
     feedBlock.href = `#${id}`;
     feedBlock.className = 'list-group-item list-group-item-action';
     feedBlock.addEventListener('click', changeActiveFeed);
+    if (!state.rssList.feedSelection.enabled) {
+      feedBlock.classList.add('disabled');
+    }
     feedsList.append(feedBlock);
     const title = document.createElement('h4');
     title.textContent = feedTitle;
@@ -69,7 +72,8 @@ export default (state, elements, changeActiveFeed, t) => {
   }, 1);
 
   watch(state.content, 'posts', () => {
-    const { lastRenderedPostId, activeFeed } = state.rssList;
+    const { lastRenderedPostId } = state.rssList;
+    const { show } = state.rssList.feedSelection;
     const lastRenderedIndex = findIndex(state.content.posts, ({ id }) => id === lastRenderedPostId);
     const newPosts = state.content.posts.slice(lastRenderedIndex + 1);
     newPosts.forEach((post) => {
@@ -82,7 +86,7 @@ export default (state, elements, changeActiveFeed, t) => {
       postContainer.target = '_blank';
       postContainer.className = 'post list-group-item list-group-item-action';
       postContainer.dataset.feedId = feedId;
-      if (activeFeed !== 'all' && activeFeed !== feedId) {
+      if (show !== 'all' && feedId !== show) {
         postContainer.classList.add('d-none');
       }
       postsList.prepend(postContainer);
@@ -109,12 +113,19 @@ export default (state, elements, changeActiveFeed, t) => {
     });
   });
 
-  watch(state.rssList, 'activeFeed', () => {
-    const { activeFeed } = state.rssList;
+  watch(state.rssList.feedSelection, 'enabled', () => {
+    if (state.rssList.feedSelection.enabled) {
+      elements.allBtn.classList.remove('d-none');
+      feedsList.querySelector('a.disabled').classList.remove('disabled');
+    }
+  });
+
+  watch(state.rssList.feedSelection, 'show', () => {
+    const { show } = state.rssList.feedSelection;
     feedsList.querySelector('a.active').classList.remove('active');
-    feedsList.querySelector(`a[href="#${activeFeed}"]`).classList.add('active');
+    feedsList.querySelector(`a[href="#${show}"]`).classList.add('active');
     postsList.querySelectorAll('a.post').forEach((post) => {
-      if (activeFeed === 'all' || post.dataset.feedId === activeFeed) {
+      if (show === 'all' || post.dataset.feedId === show) {
         post.classList.remove('d-none');
       } else {
         post.classList.add('d-none');
