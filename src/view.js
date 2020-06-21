@@ -1,7 +1,8 @@
 import { watch } from 'melanke-watchjs';
+import last from 'lodash/last';
 import findIndex from 'lodash/findIndex';
 
-export default (state, elements, t) => {
+export default (state, elements, changeActiveFeed, t) => {
   const {
     submitBtn,
     feedback,
@@ -53,37 +54,37 @@ export default (state, elements, t) => {
   });
 
   watch(state.content, 'feeds', () => {
-    feedsList.innerHTML = '';
-    const list = document.createElement('ul');
-    list.className = 'list-group list-group-flush';
-    feedsList.append(list);
-    state.content.feeds.forEach(({ feedTitle, feedDescription }) => {
-      const feedBlock = document.createElement('li');
-      feedBlock.className = 'list-group-item';
-      list.prepend(feedBlock);
-      const title = document.createElement('h4');
-      title.className = 'text-info';
-      feedBlock.append(title);
-      title.textContent = feedTitle;
-      const description = document.createElement('p');
-      feedBlock.append(description);
-      description.textContent = feedDescription;
-    });
-  });
+    const { feedTitle, feedDescription, id } = last(state.content.feeds);
+    const feedBlock = document.createElement('a');
+    feedBlock.href = `#${id}`;
+    feedBlock.className = 'list-group-item list-group-item-action';
+    feedBlock.addEventListener('click', changeActiveFeed);
+    feedsList.append(feedBlock);
+    const title = document.createElement('h4');
+    title.textContent = feedTitle;
+    feedBlock.append(title);
+    const description = document.createElement('p');
+    description.textContent = feedDescription;
+    feedBlock.append(description);
+  }, 1);
 
   watch(state.content, 'posts', () => {
-    const { lastRenderedPostId } = state.rssList;
+    const { lastRenderedPostId, activeFeed } = state.rssList;
     const lastRenderedIndex = findIndex(state.content.posts, ({ id }) => id === lastRenderedPostId);
     const newPosts = state.content.posts.slice(lastRenderedIndex + 1);
     newPosts.forEach((post) => {
       const {
-        title, link, date, feedTitle, description = '',
+        title, link, date, feedTitle, feedId, description = '',
       } = post;
 
       const postContainer = document.createElement('a');
       postContainer.href = link;
       postContainer.target = '_blank';
-      postContainer.className = 'list-group-item list-group-item-action';
+      postContainer.className = 'post list-group-item list-group-item-action';
+      postContainer.dataset.feedId = feedId;
+      if (activeFeed !== 'all' && activeFeed !== feedId) {
+        postContainer.classList.add('d-none');
+      }
       postsList.prepend(postContainer);
 
       const postHeading = document.createElement('h5');
@@ -105,6 +106,19 @@ export default (state, elements, t) => {
       postFooter.append(dateEl);
       postFooter.append(sourseFeed);
       postContainer.append(postFooter);
+    });
+  });
+
+  watch(state.rssList, 'activeFeed', () => {
+    const { activeFeed } = state.rssList;
+    feedsList.querySelector('a.active').classList.remove('active');
+    feedsList.querySelector(`a[href="#${activeFeed}"]`).classList.add('active');
+    postsList.querySelectorAll('a.post').forEach((post) => {
+      if (activeFeed === 'all' || post.dataset.feedId === activeFeed) {
+        post.classList.remove('d-none');
+      } else {
+        post.classList.add('d-none');
+      }
     });
   });
 };

@@ -33,6 +33,7 @@ export default () => {
     feedback: document.querySelector('.feedback'),
     feedsList: document.querySelector('.rss-items'),
     postsList: document.querySelector('.rss-links'),
+    allBtn: document.querySelector('a[href="#all"]'),
   };
 
   const state = {
@@ -47,15 +48,21 @@ export default () => {
       error: '',
     },
     rssList: {
-      lastRenderedPostId: 0,
+      lastRenderedPostId: null,
+      activeFeed: 'all',
     },
+  };
+
+  const changeActiveFeed = (e) => {
+    e.preventDefault();
+    state.rssList.activeFeed = e.currentTarget.hash.slice(1);
   };
 
   i18next.init({
     lng: 'en',
     debug: true,
     resources,
-  }).then((t) => render(state, elements, t));
+  }).then((t) => render(state, elements, changeActiveFeed, t));
 
   elements.urlInput.addEventListener('input', (e) => {
     state.rssForm.state = 'validation';
@@ -84,6 +91,8 @@ export default () => {
         throw err;
       });
   });
+
+  elements.allBtn.addEventListener('click', changeActiveFeed);
 
   refresh(state);
 };
