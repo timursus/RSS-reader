@@ -6,6 +6,10 @@ export default (rss) => {
   const feed = {
     feedTitle, feedDescription,
   };
+  const image = doc.querySelector('channel>image>url');
+  if (image) {
+    feed.imageUrl = image.textContent;
+  }
   const postsItems = doc.querySelectorAll('item');
   const feedPosts = [...postsItems].map((item) => {
     const title = item.querySelector('title').textContent;

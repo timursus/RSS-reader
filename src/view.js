@@ -54,21 +54,32 @@ export default (state, elements, changeActiveFeed, t) => {
   });
 
   watch(state.content, 'feeds', () => {
-    const { feedTitle, feedDescription, id } = last(state.content.feeds);
-    const feedBlock = document.createElement('a');
-    feedBlock.href = `#${id}`;
-    feedBlock.className = 'list-group-item list-group-item-action';
-    feedBlock.addEventListener('click', changeActiveFeed);
+    const { feedTitle, id, imageUrl = null } = last(state.content.feeds);
+    const link = document.createElement('a');
+    link.href = `#${id}`;
+    link.className = 'list-group-item list-group-item-action';
+    link.addEventListener('click', changeActiveFeed);
     if (!state.rssList.feedSelection.enabled) {
-      feedBlock.classList.add('disabled');
+      link.classList.add('disabled');
     }
-    feedsList.append(feedBlock);
+    feedsList.append(link);
+    const feedContainer = document.createElement('div');
+    feedContainer.className = 'media';
+    link.append(feedContainer);
+    if (imageUrl) {
+      const img = document.createElement('img');
+      img.src = imageUrl;
+      img.alt = feedTitle;
+      img.width = '42';
+      img.className = 'align-self-center mr-3';
+      feedContainer.append(img);
+    }
+    const text = document.createElement('div');
+    text.className = 'media-body';
+    feedContainer.append(text);
     const title = document.createElement('h4');
     title.textContent = feedTitle;
-    feedBlock.append(title);
-    const description = document.createElement('p');
-    description.textContent = feedDescription;
-    feedBlock.append(description);
+    text.append(title);
   }, 1);
 
   watch(state.content, 'posts', () => {
@@ -84,7 +95,7 @@ export default (state, elements, changeActiveFeed, t) => {
       const postContainer = document.createElement('a');
       postContainer.href = link;
       postContainer.target = '_blank';
-      postContainer.className = 'post list-group-item list-group-item-action';
+      postContainer.className = 'post list-group-item list-group-item-action bg-light my-1';
       postContainer.dataset.feedId = feedId;
       if (show !== 'all' && feedId !== show) {
         postContainer.classList.add('d-none');
