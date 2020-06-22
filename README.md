@@ -4,6 +4,12 @@
 
 ### JS training project for hexlet.io (lvl3)
 
-RSS news feed with automatic updates.
+Add valid RSS link to browse all its items. Сontent updates will be loaded automatically.  
+When more then one feed added, you can choose to show the content of one channel or all of them.
 
-Try it: https://rss-reader-kappa.now.sh
+##### Try it at following URLs:
+ - https://rss-reader-kappa.now.sh
+ - https://rss-reader.timursus.vercel.app
+ - https://rss-reader-git-master.timursus.vercel.app
+ - https://rss-reader.timursus.now.sh
+ - https://rss-reader-git-master.timursus.now.sh
