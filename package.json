@@ -50,7 +50,7 @@
     "core-js": "^3.6.5",
     "crc-32": "^1.2.0",
     "i18next": "^19.4.5",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "melanke-watchjs": "^1.5.2",
     "regenerator-runtime": "^0.13.5",
     "yup": "^0.29.1"
