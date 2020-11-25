@@ -6,40 +6,44 @@
   <link rel="icon" href="favicon.png" type="image/png">
   <title>RSS Reader</title>
 </head>
-<body class="d-flex flex-column h-100">
-  <div class="container mt-4">
+<body class="d-flex flex-column min-vh-100">
+  <main class="flex-grow-1">
+    <section class="jumbotron jumbotron-fluid shadow text-center py-4">
+      <div class="container-xl">
+        <div class="row justify-content-center">
+          <div class="col-md-10 col-lg-8">
+            <h1 class="display-4">RSS reader</h1>
+            <p class="lead">All your favorite feeds in one place!</p>
+          
+            <form action="#" class="rss-form form-inline mb-2">
+              <input autofocus type="text" required name="url" class="form-control form-control-lg flex-grow-1" placeholder="rss link">
+              <button type="submit" class="btn btn-lg btn-primary ml-1">Add</button>
+            </form>
 
-    <div class="jumbotron shadow text-center">
-      <h1 class="display-4">RSS reader</h1>
-
-      <p class="lead">All your favorite feeds in one place!</p>
-
-      <form action="#" class="rss-form form-inline w-50 mx-auto mb-1 pl-4">
-          <input type="text" required name="url" class="form-control flex-grow-1" placeholder="rss link">
-          <button type="submit" class="btn btn-primary ml-1">Add</button>
-      </form>
-
-      <div class="feedback"></div>
-    </div>
-
-    <div class="row">
-      <div class="col-4">
-        <div class="rss-items list-group list-group-flush">
-          <a href="#all" class="list-group-item list-group-item-action border rounded active d-none">Show all sources</a>
+            <p class="text-muted my-1">Example: https://stackabuse.com/rss</p>
+            <div class="feedback"></div>
+          </div>
         </div>
       </div>
-
-      <div class="col-8">
-        <div class="rss-links list-group list-group-flush">
+    </section>
+    
+    <div class="container-lg">
+      <div class="row justify-content-center">
+        <div class="col-12 col-lg-9 col-xl-3">
+          <div class="rss-items list-group sticky-top mb-4">
+            <a href="#all" class="text-center list-group-item list-group-item-light list-group-item-action active d-none">Show all sources</a>
+          </div>
+        </div>
+        <div class="col-12 col-xl-9">
+          <div class="rss-links list-group list-group-flush"></div>
         </div>
       </div>
     </div>
+  </main>
 
-    <footer class="footer px-4">
-      <hr>
-      <p>&copy; Akhmetov Timur</p>
-    </footer>
-
-  </div>
+  <footer class="footer border-top text-center mt-2 p-3">
+    <p class="m-0"> &copy; Akhmetov Timur </p>
+    <a href="https://github.com/timursus/RSS-reader" target="blanc">source code</a>
+  </footer>
 </body>
 </html>
