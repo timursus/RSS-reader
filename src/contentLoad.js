@@ -7,6 +7,7 @@ import crc32 from 'crc-32';
 import parse from './parser';
 
 const proxy = 'https://cors-anywhere.herokuapp.com/';
+const refreshInterval = 15000;
 
 const addID = (posts, channelId) => posts.map((post) => {
   post.id = uniqueId();
@@ -35,12 +36,12 @@ export const refresh = (state) => {
         feed.hash = freshHash;
       });
   });
-  Promise.all(promises).finally(() => setTimeout(refresh, 5000, state));
+  Promise.all(promises).finally(() => setTimeout(refresh, refreshInterval, state));
 };
 
 export const loadNewChannel = (url, state) => {
   const fullURL = proxy.concat(url);
-  return axios.get(fullURL, { timeout: 5000 })
+  return axios.get(fullURL, { timeout: 8000 })
     .then(({ data }) => {
       const { feed, feedPosts } = parse(data);
       const channelId = uniqueId();
