@@ -15,9 +15,15 @@
             <h1 class="display-4">RSS reader</h1>
             <p class="lead">All your favorite feeds in one place!</p>
           
-            <form action="#" class="rss-form form-inline mb-2">
-              <input autofocus type="text" required name="url" class="form-control form-control-lg flex-grow-1" placeholder="rss link">
-              <button type="submit" class="btn btn-lg btn-primary ml-1">Add</button>
+            <form action="#" class="rss-form">
+              <div class="form-row">
+                <div class="col mb-2">
+                  <input autofocus type="text" required name="url" class="form-control form-control-lg" placeholder="rss link">
+                </div>
+                <div class="col-12 col-sm-auto">
+                  <button type="submit" class="btn btn-lg btn-dark btn-block">Add</button>
+                </div>
+              </div>
             </form>
 
             <p class="text-muted my-1">Example: https://stackabuse.com/rss</p>
