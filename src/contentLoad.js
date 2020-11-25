@@ -6,8 +6,9 @@ import differenceBy from 'lodash/differenceBy';
 import crc32 from 'crc-32';
 import parse from './parser';
 
-const proxy = 'https://cors-anywhere.herokuapp.com/';
-const refreshInterval = 15000;
+const proxyNewChannel = 'https://api.allorigins.win/raw?url='; // cache time 60 min
+const proxyRefresh = 'https://cors-anywhere.herokuapp.com/'; // not so stable
+const refreshInterval = 30000;
 
 const addID = (posts, channelId) => posts.map((post) => {
   post.id = uniqueId();
@@ -15,16 +16,16 @@ const addID = (posts, channelId) => posts.map((post) => {
   return post;
 });
 
-export const refresh = (state) => {
+export const refreshContent = (state) => {
   const { feeds, posts } = state.content;
-  const promises = feeds.map((feed) => {
+  const refreshPromises = feeds.map((feed) => {
     const { url, id, hash } = feed;
-    const fullURL = proxy.concat(url);
+    const fullURL = proxyRefresh.concat(url);
     return axios.get(fullURL, { timeout: 10000 })
       .then(({ data }) => {
         const freshHash = crc32.str(data);
         if (freshHash === hash) {
-          return;
+          return; // same data, no actions needed
         }
         const { feedPosts } = parse(data);
         const newPosts = differenceBy(feedPosts, posts, 'link');
@@ -36,12 +37,12 @@ export const refresh = (state) => {
         feed.hash = freshHash;
       });
   });
-  Promise.all(promises).finally(() => setTimeout(refresh, refreshInterval, state));
+  Promise.all(refreshPromises).finally(() => setTimeout(refreshContent, refreshInterval, state));
 };
 
 export const loadNewChannel = (url, state) => {
-  const fullURL = proxy.concat(url);
-  return axios.get(fullURL, { timeout: 8000 })
+  const fullURL = proxyNewChannel.concat(url);
+  return axios.get(fullURL, { timeout: 7500 })
     .then(({ data }) => {
       const { feed, feedPosts } = parse(data);
       const channelId = uniqueId();
