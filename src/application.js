@@ -1,7 +1,7 @@
 import { string } from 'yup';
 import i18next from 'i18next';
 import resources from './locales';
-import { loadNewChannel, refresh } from './contentLoad';
+import { loadNewChannel, refreshContent } from './contentLoad';
 import render from './view';
 
 const validateUrl = (url, addedURLs) => {
@@ -80,9 +80,7 @@ export default () => {
     loadNewChannel(url, state)
       .then(() => {
         state.rssForm.state = 'added';
-        if (state.content.feeds.length === 2) {
-          state.rssList.feedSelection.enabled = true;
-        }
+        state.rssList.feedSelection.enabled = (state.content.feeds.length > 1);
       })
       .catch((err) => {
         state.rssForm.state = 'failed';
@@ -100,5 +98,5 @@ export default () => {
 
   elements.allBtn.addEventListener('click', changeActiveFeed);
 
-  refresh(state);
+  refreshContent(state);
 };
