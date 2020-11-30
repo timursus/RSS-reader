@@ -4,7 +4,7 @@ export default {
       success: 'RSS successfully loaded',
       parsingError: 'Sorry, failed to process. Probably, it is not RSS link.',
       networkError: {
-        timeout: 'Network problems. Please, try again.',
+        noResponse: 'Network problems. Please, try again.',
         status3xx: 'Redirection network error. Please check your URL.',
         status4xx: 'Client network error. Please check your URL.',
         status5xx: 'Server error. Please, try again later.',

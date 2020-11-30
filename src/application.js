@@ -1,5 +1,7 @@
 import { string } from 'yup';
 import i18next from 'i18next';
+import get from 'lodash/get';
+import last from 'lodash/last';
 import resources from './locales';
 import { loadNewChannel, refreshContent } from './contentLoad';
 import render from './view';
@@ -56,17 +58,6 @@ export default () => {
     },
   };
 
-  const changeActiveFeed = (e) => {
-    e.preventDefault();
-    state.rssList.feedSelection.show = e.currentTarget.hash.slice(1);
-  };
-
-  i18next.init({
-    lng: 'en',
-    debug: true,
-    resources,
-  }).then((t) => render(state, elements, changeActiveFeed, t));
-
   elements.urlInput.addEventListener('input', (e) => {
     state.rssForm.state = 'validation';
     state.rssForm.value = e.target.value;
@@ -76,27 +67,31 @@ export default () => {
   elements.rssForm.addEventListener('submit', (e) => {
     e.preventDefault();
     state.rssForm.state = 'loading';
+    state.rssList.lastRenderedPostId = get(last(state.content.posts), 'id', null);
     const url = state.rssForm.value;
-    loadNewChannel(url, state)
+    loadNewChannel(url, state.content)
       .then(() => {
         state.rssForm.state = 'added';
         state.rssList.feedSelection.enabled = (state.content.feeds.length > 1);
       })
       .catch((err) => {
         state.rssForm.state = 'failed';
-        if (err.response) {
-          const responseClass = String(err.response.status).slice(0, 1);
-          state.rssForm.error = `loading.networkError.status${responseClass}xx`;
-        } else if (err.request) {
-          state.rssForm.error = 'loading.networkError.timeout';
-        } else {
-          state.rssForm.error = 'loading.parsingError';
-        }
+        state.rssForm.error = err.translationKey;
         throw err;
       });
   });
 
+  const changeActiveFeed = (e) => {
+    e.preventDefault();
+    state.rssList.feedSelection.show = e.currentTarget.hash.slice(1);
+  };
   elements.allBtn.addEventListener('click', changeActiveFeed);
+
+  i18next.init({
+    lng: 'en',
+    debug: true,
+    resources,
+  }).then((t) => render(state, elements, changeActiveFeed, t));
 
   refreshContent(state);
 };

@@ -1,6 +1,5 @@
 import axios from 'axios';
 import uniqueId from 'lodash/uniqueId';
-import get from 'lodash/get';
 import last from 'lodash/last';
 import differenceBy from 'lodash/differenceBy';
 import crc32 from 'crc-32';
@@ -40,7 +39,7 @@ export const refreshContent = (state) => {
   Promise.all(refreshPromises).finally(() => setTimeout(refreshContent, refreshInterval, state));
 };
 
-export const loadNewChannel = (url, state) => {
+export const loadNewChannel = (url, content) => {
   const fullURL = proxyNewChannel.concat(url);
   return axios.get(fullURL, { timeout: 7500 })
     .then(({ data }) => {
@@ -49,9 +48,21 @@ export const loadNewChannel = (url, state) => {
       feed.id = channelId;
       feed.url = url;
       feed.hash = crc32.str(data);
-      state.content.feeds.push(feed);
-      state.rssList.lastRenderedPostId = get(last(state.content.posts), 'id', null);
+      content.feeds.push(feed);
       const postsWithId = addID(feedPosts.reverse(), channelId);
-      state.content.posts.push(...postsWithId);
+      content.posts.push(...postsWithId);
+    })
+    .catch((error) => {
+      if (error.isAxiosError) {
+        if (error.response) {
+          const responseClass = String(error.response.status).slice(0, 1);
+          error.translationKey = `loading.networkError.status${responseClass}xx`;
+        } else {
+          error.translationKey = 'loading.networkError.noResponse';
+        }
+      } else {
+        error.translationKey = 'loading.parsingError';
+      }
+      throw error;
     });
 };
