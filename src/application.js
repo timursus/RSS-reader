@@ -1,31 +1,10 @@
-import { string } from 'yup';
 import i18next from 'i18next';
 import get from 'lodash/get';
 import last from 'lodash/last';
 import resources from './locales';
+import updateValidationState from './validation';
 import { loadNewChannel, refreshContent } from './contentLoad';
 import render from './view';
-
-const validateUrl = (url, addedURLs) => {
-  const schema = string()
-    .url('validationErrors.notValidURL')
-    .notOneOf(addedURLs, 'validationErrors.alreadyAdded');
-  return schema.validate(url);
-};
-
-const updateValidationState = (state) => {
-  const addedURLs = state.content.feeds.map(({ url }) => url);
-  validateUrl(state.rssForm.value, addedURLs)
-    .then(() => {
-      state.rssForm.valid = true;
-      state.rssForm.error = '';
-    })
-    .catch((err) => {
-      state.rssForm.valid = false;
-      const [errorKey] = err.errors;
-      state.rssForm.error = errorKey;
-    });
-};
 
 export default () => {
   const elements = {
