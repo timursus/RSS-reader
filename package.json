@@ -1,6 +1,6 @@
 {
   "name": "rss-reader",
-  "version": "0.8.1",
+  "version": "1.0.0",
   "description": "RSS news feed with automatic updates",
   "main": "dist/index.js",
   "scripts": {
