@@ -16,7 +16,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './src/index.html',
+      template: './assets/index.html',
     }),
     new MiniCssExtractPlugin({
       filename: '[name].css',
@@ -24,7 +24,7 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         {
-          from: path.resolve(__dirname, 'src/favicon.png'),
+          from: path.resolve(__dirname, 'assets/favicon.png'),
           to: path.resolve(__dirname, 'dist'),
         },
       ],

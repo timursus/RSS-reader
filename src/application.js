@@ -3,7 +3,7 @@ import get from 'lodash/get';
 import last from 'lodash/last';
 import resources from './locales';
 import updateValidationState from './validation';
-import { loadNewChannel, refreshContent } from './contentLoad';
+import { loadNewChannel, refreshContent } from './contentLoaders';
 import render from './view';
 
 export default () => {
@@ -14,7 +14,7 @@ export default () => {
     feedback: document.querySelector('.feedback'),
     feedsList: document.querySelector('.rss-items'),
     postsList: document.querySelector('.rss-links'),
-    allBtn: document.querySelector('a[href="#all"]'),
+    showAllBtn: document.querySelector('a[href="#all"]'),
   };
 
   const state = {
@@ -32,7 +32,7 @@ export default () => {
       lastRenderedPostId: null,
       feedSelection: {
         enabled: false,
-        show: 'all',
+        activeId: 'all',
       },
     },
   };
@@ -62,9 +62,10 @@ export default () => {
 
   const changeActiveFeed = (e) => {
     e.preventDefault();
-    state.rssList.feedSelection.show = e.currentTarget.hash.slice(1);
+    state.rssList.feedSelection.activeId = e.currentTarget.hash.slice(1);
   };
-  elements.allBtn.addEventListener('click', changeActiveFeed);
+
+  elements.showAllBtn.addEventListener('click', changeActiveFeed);
 
   i18next.init({
     lng: 'en',

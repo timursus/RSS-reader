@@ -1,6 +1,5 @@
 import { watch } from 'melanke-watchjs';
-import last from 'lodash/last';
-import findIndex from 'lodash/findIndex';
+import { renderNewFeed, renderNewPosts } from './contentRenderers';
 
 export default (state, elements, changeActiveFeed, t) => {
   const {
@@ -8,6 +7,7 @@ export default (state, elements, changeActiveFeed, t) => {
     feedback,
     feedsList,
     postsList,
+    urlInput,
   } = elements;
 
   const spinner = document.createElement('span');
@@ -21,11 +21,11 @@ export default (state, elements, changeActiveFeed, t) => {
       case 'validation': {
         if (state.rssForm.valid) {
           feedback.textContent = '';
-          elements.urlInput.classList.remove('is-invalid');
+          urlInput.classList.remove('is-invalid');
         } else {
           feedback.textContent = t(state.rssForm.error);
           feedback.className = 'text-danger';
-          elements.urlInput.classList.add('is-invalid');
+          urlInput.classList.add('is-invalid');
         }
         break;
       }
@@ -53,90 +53,24 @@ export default (state, elements, changeActiveFeed, t) => {
     }
   });
 
-  watch(state.content, 'feeds', () => {
-    const { feedTitle, id, imageUrl = null } = last(state.content.feeds);
-    const link = document.createElement('a');
-    link.href = `#${id}`;
-    link.className = 'd-flex justify-content-center align-items-center list-group-item list-group-item-dark list-group-item-action';
-    link.addEventListener('click', changeActiveFeed);
-    if (!state.rssList.feedSelection.enabled) {
-      link.classList.add('disabled');
-    }
-    feedsList.append(link);
-    const feedContainer = document.createElement('div');
-    feedContainer.className = 'media align-items-center';
-    link.append(feedContainer);
-    if (imageUrl) {
-      const img = document.createElement('img');
-      img.src = imageUrl;
-      img.alt = feedTitle;
-      img.width = '42';
-      img.className = 'mr-3';
-      feedContainer.append(img);
-    }
-    const text = document.createElement('div');
-    text.className = 'media-body';
-    feedContainer.append(text);
-    const title = document.createElement('h4');
-    title.textContent = feedTitle;
-    text.append(title);
-  }, 1);
+  const feedsWatchLevel = 1;
+  watch(state.content, 'feeds', renderNewFeed(state, feedsList, changeActiveFeed), feedsWatchLevel);
 
-  watch(state.content, 'posts', () => {
-    const { lastRenderedPostId } = state.rssList;
-    const { show } = state.rssList.feedSelection;
-    const lastRenderedIndex = findIndex(state.content.posts, ({ id }) => id === lastRenderedPostId);
-    const newPosts = state.content.posts.slice(lastRenderedIndex + 1);
-    newPosts.forEach((post) => {
-      const {
-        title, link, date, feedTitle, feedId, description = '',
-      } = post;
-
-      const postContainer = document.createElement('a');
-      postContainer.href = link;
-      postContainer.target = '_blank';
-      postContainer.className = 'post list-group-item list-group-item-action bg-light overflow-hidden mb-2';
-      postContainer.dataset.feedId = feedId;
-      if (show !== 'all' && feedId !== show) {
-        postContainer.classList.add('d-none');
-      }
-      postsList.prepend(postContainer);
-
-      const postHeading = document.createElement('h5');
-      postHeading.className = 'mb-1';
-      postHeading.textContent = title;
-      postContainer.append(postHeading);
-
-      const postDescription = document.createElement('p');
-      postDescription.className = 'mb-1 text-secondary';
-      postDescription.innerHTML = description;
-      postContainer.append(postDescription);
-
-      const postFooter = document.createElement('div');
-      postFooter.className = 'd-flex w-100 justify-content-between';
-      const sourseFeed = document.createElement('small');
-      sourseFeed.textContent = feedTitle;
-      const dateEl = document.createElement('small');
-      dateEl.textContent = `${date.toDateString().slice(0, 10)}, ${date.toTimeString().slice(0, 5)}`;
-      postFooter.append(dateEl);
-      postFooter.append(sourseFeed);
-      postContainer.append(postFooter);
-    });
-  });
+  watch(state.content, 'posts', renderNewPosts(state, postsList));
 
   watch(state.rssList.feedSelection, 'enabled', () => {
     if (state.rssList.feedSelection.enabled) {
-      elements.allBtn.classList.remove('d-none');
+      elements.showAllBtn.classList.remove('d-none');
       feedsList.querySelector('a.disabled').classList.remove('disabled');
     }
   });
 
-  watch(state.rssList.feedSelection, 'show', () => {
-    const { show } = state.rssList.feedSelection;
+  watch(state.rssList.feedSelection, 'activeId', () => {
+    const { activeId } = state.rssList.feedSelection;
     feedsList.querySelector('a.active').classList.remove('active');
-    feedsList.querySelector(`a[href="#${show}"]`).classList.add('active');
+    feedsList.querySelector(`a[href="#${activeId}"]`).classList.add('active');
     postsList.querySelectorAll('a.post').forEach((post) => {
-      if (show === 'all' || post.dataset.feedId === show) {
+      if (activeId === 'all' || post.dataset.feedId === activeId) {
         post.classList.remove('d-none');
       } else {
         post.classList.add('d-none');
