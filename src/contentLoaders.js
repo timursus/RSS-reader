@@ -7,7 +7,7 @@ import parse from './parser';
 
 const proxyNewChannel = 'https://api.allorigins.win/raw?url='; // cache time 60 min
 const proxyRefresh = 'https://cors-anywhere.herokuapp.com/'; // not so stable
-const refreshInterval = 30000;
+const updateInterval = 30000;
 
 const addID = (posts, channelId) => posts.map((post) => {
   post.id = uniqueId();
@@ -15,31 +15,29 @@ const addID = (posts, channelId) => posts.map((post) => {
   return post;
 });
 
-export const refreshContent = (state) => {
-  const { feeds, posts } = state.content;
-  const refreshPromises = feeds.map((feed) => {
-    const { url, id, hash } = feed;
-    const fullURL = proxyRefresh.concat(url);
-    return axios.get(fullURL, { timeout: 10000 })
-      .then(({ data }) => {
-        const freshHash = crc32.str(data);
-        if (freshHash === hash) {
-          return; // same data, no actions needed
-        }
-        const { feedPosts } = parse(data);
-        const newPosts = differenceBy(feedPosts, posts, 'link');
-        if (newPosts.length > 0) {
-          state.rssList.lastRenderedPostId = last(posts).id;
-          const newPostsWithId = addID(newPosts.reverse(), id);
-          posts.push(...newPostsWithId);
-        }
-        feed.hash = freshHash;
-      });
-  });
-  Promise.all(refreshPromises).finally(() => setTimeout(refreshContent, refreshInterval, state));
+const refreshChannel = (feed, state) => {
+  const { posts } = state.content;
+  const { url, id, hash } = feed;
+  const fullURL = proxyRefresh.concat(url);
+  return axios.get(fullURL, { timeout: 10000 })
+    .then(({ data }) => {
+      const freshHash = crc32.str(data);
+      if (freshHash === hash) {
+        return; // same data, no actions needed
+      }
+      const { feedPosts } = parse(data);
+      const newPosts = differenceBy(feedPosts, posts, 'link');
+      if (newPosts.length > 0) {
+        state.rssList.lastRenderedPostId = last(posts).id;
+        const newPostsWithId = addID(newPosts.reverse(), id);
+        posts.push(...newPostsWithId);
+      }
+      feed.hash = freshHash;
+    })
+    .finally(() => setTimeout(refreshChannel, updateInterval, feed, state));
 };
 
-export const loadNewChannel = (url, content) => {
+const subscribeToChannel = (url, state) => {
   const fullURL = proxyNewChannel.concat(url);
   return axios.get(fullURL, { timeout: 7500 })
     .then(({ data }) => {
@@ -48,9 +46,10 @@ export const loadNewChannel = (url, content) => {
       feed.id = channelId;
       feed.url = url;
       feed.hash = crc32.str(data);
-      content.feeds.push(feed);
+      state.content.feeds.push(feed);
       const postsWithId = addID(feedPosts.reverse(), channelId);
-      content.posts.push(...postsWithId);
+      state.content.posts.push(...postsWithId);
+      setTimeout(refreshChannel, updateInterval, feed, state);
     })
     .catch((error) => {
       if (error.isAxiosError) {
@@ -66,3 +65,5 @@ export const loadNewChannel = (url, content) => {
       throw error;
     });
 };
+
+export default subscribeToChannel;

@@ -3,7 +3,7 @@ import get from 'lodash/get';
 import last from 'lodash/last';
 import resources from './locales';
 import updateValidationState from './validation';
-import { loadNewChannel, refreshContent } from './contentLoaders';
+import subscribeToChannel from './contentLoaders';
 import render from './view';
 
 export default () => {
@@ -48,7 +48,7 @@ export default () => {
     state.rssForm.state = 'loading';
     state.rssList.lastRenderedPostId = get(last(state.content.posts), 'id', null);
     const url = state.rssForm.value;
-    loadNewChannel(url, state.content)
+    subscribeToChannel(url, state)
       .then(() => {
         state.rssForm.state = 'added';
         state.rssList.feedSelection.enabled = (state.content.feeds.length > 1);
@@ -72,6 +72,4 @@ export default () => {
     debug: true,
     resources,
   }).then((t) => render(state, elements, changeActiveFeed, t));
-
-  refreshContent(state);
 };
