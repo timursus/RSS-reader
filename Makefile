@@ -2,7 +2,7 @@ install:
 	npm ci
 
 devserver:
-	npx webpack-dev-server --open
+	npx webpack serve --open http://localhost:4200/
 
 devbuild:
 	rm -rf dist

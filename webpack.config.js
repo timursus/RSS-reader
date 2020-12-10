@@ -3,15 +3,19 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 
+const devMode = (process.env.NODE_ENV !== 'production');
+
+const getFilename = (ext) => (devMode ? `[name].${ext}` : `[name].[contenthash].${ext}`);
+
 module.exports = {
-  mode: process.env.NODE_ENV || 'development',
+  mode: devMode ? 'development' : 'production',
   entry: './src/index.js',
   output: {
-    filename: '[name].js',
+    filename: getFilename('js'),
     path: path.resolve(__dirname, 'dist'),
   },
   devServer: {
-    contentBase: './dist',
+    contentBase: path.resolve(__dirname, 'dist'),
     port: 4200,
   },
   plugins: [
@@ -19,7 +23,7 @@ module.exports = {
       template: './assets/index.html',
     }),
     new MiniCssExtractPlugin({
-      filename: '[name].css',
+      filename: getFilename('css'),
     }),
     new CopyPlugin({
       patterns: [
@@ -35,20 +39,12 @@ module.exports = {
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-        },
+        use: 'babel-loader',
       },
       {
         test: /\.css$/,
         use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-            options: {
-              hmr: process.env.NODE_ENV === 'development',
-              reloadAll: true,
-            },
-          },
+          devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
           'css-loader',
         ],
       },
