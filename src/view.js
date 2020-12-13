@@ -10,10 +10,10 @@ const showNotification = (type, message, appNotifications) => {
   body.textContent = message;
   toast.append(body);
   appNotifications.prepend(toast);
-  setTimeout(() => toast.remove(), 6000); // auto hide the toast
+  setTimeout(() => toast.remove(), 6000);
 };
 
-export default (state, elements, changeActiveFeed, t) => {
+export default (state, elements, t) => {
   const {
     submitBtn,
     formFeedback,
@@ -64,7 +64,7 @@ export default (state, elements, changeActiveFeed, t) => {
   });
 
   const feedsWatchLevel = 1;
-  watch(state.content, 'feeds', renderNewFeed(state, feedsList, changeActiveFeed), feedsWatchLevel);
+  watch(state.content, 'feeds', renderNewFeed(state, feedsList), feedsWatchLevel);
 
   watch(state.content, 'posts', renderNewPosts(state, postsList));
 
@@ -79,7 +79,7 @@ export default (state, elements, changeActiveFeed, t) => {
     const { activeId } = state.rssList.feedSelection;
     feedsList.querySelector('a.active').classList.remove('active');
     feedsList.querySelector(`a[href="#${activeId}"]`).classList.add('active');
-    postsList.querySelectorAll('a.post').forEach((post) => {
+    postsList.children.forEach((post) => {
       if (activeId === 'all' || post.dataset.feedId === activeId) {
         post.classList.remove('d-none');
       } else {

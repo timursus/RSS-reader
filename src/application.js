@@ -64,14 +64,16 @@ export default () => {
 
   const changeActiveFeed = (e) => {
     e.preventDefault();
-    state.rssList.feedSelection.activeId = e.currentTarget.hash.slice(1);
+    const feedLink = e.target.closest('a');
+    const newActiveFeedId = feedLink.hash.slice(1);
+    state.rssList.feedSelection.activeId = newActiveFeedId;
   };
 
-  elements.showAllBtn.addEventListener('click', changeActiveFeed);
+  elements.feedsList.addEventListener('click', changeActiveFeed);
 
   i18next.init({
     lng: 'en',
     debug: true,
     resources,
-  }).then((t) => render(state, elements, changeActiveFeed, t));
+  }).then((t) => render(state, elements, t));
 };

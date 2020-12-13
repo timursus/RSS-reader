@@ -1,7 +1,7 @@
 import last from 'lodash/last';
 import findIndex from 'lodash/findIndex';
 
-export const renderNewFeed = (state, feedsList, changeActiveFeed) => () => {
+export const renderNewFeed = (state, feedsList) => () => {
   const {
     feedTitle, feedDescription, id, imageUrl = null,
   } = last(state.content.feeds);
@@ -13,7 +13,6 @@ export const renderNewFeed = (state, feedsList, changeActiveFeed) => () => {
   if (!state.rssList.feedSelection.enabled) {
     feedContainer.classList.add('disabled');
   }
-  feedContainer.addEventListener('click', changeActiveFeed);
 
   const mediaContainer = document.createElement('div');
   mediaContainer.className = 'media align-items-center';
