@@ -9,10 +9,10 @@ const validateUrl = (url, addedURLs) => {
 
 const updateValidationState = (state) => {
   const addedURLs = state.content.feeds.map(({ url }) => url);
-  validateUrl(state.rssForm.value, addedURLs)
+  validateUrl(state.rssForm.url, addedURLs)
     .then(() => {
       state.rssForm.valid = true;
-      state.rssForm.error = '';
+      state.rssForm.error = null;
     })
     .catch((err) => {
       state.rssForm.valid = false;

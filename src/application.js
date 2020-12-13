@@ -11,7 +11,8 @@ export default () => {
     rssForm: document.querySelector('.rss-form'),
     urlInput: document.querySelector('input[name="url"]'),
     submitBtn: document.querySelector('button[type="submit"]'),
-    feedback: document.querySelector('.feedback'),
+    formFeedback: document.querySelector('.invalid-tooltip'),
+    appNotifications: document.querySelector('.notification-area'),
     feedsList: document.querySelector('.rss-items'),
     postsList: document.querySelector('.rss-links'),
     showAllBtn: document.querySelector('a[href="#all"]'),
@@ -23,10 +24,10 @@ export default () => {
       posts: [],
     },
     rssForm: {
-      state: 'validation', // loading, added, failed
-      value: '',
+      status: 'filling', // loading, added, failed
+      url: '',
       valid: true,
-      error: '',
+      error: null,
     },
     rssList: {
       lastRenderedPostId: null,
@@ -35,27 +36,28 @@ export default () => {
         activeId: 'all',
       },
     },
+    appError: null,
   };
 
   elements.urlInput.addEventListener('input', (e) => {
-    state.rssForm.state = 'validation';
-    state.rssForm.value = e.target.value;
+    state.rssForm.status = 'filling';
+    state.rssForm.url = e.target.value;
     updateValidationState(state);
   });
 
   elements.rssForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    state.rssForm.state = 'loading';
+    state.rssForm.status = 'loading';
     state.rssList.lastRenderedPostId = get(last(state.content.posts), 'id', null);
-    const url = state.rssForm.value;
+    const { url } = state.rssForm;
     subscribeToChannel(url, state)
       .then(() => {
-        state.rssForm.state = 'added';
+        state.rssForm.status = 'added';
         state.rssList.feedSelection.enabled = (state.content.feeds.length > 1);
       })
       .catch((err) => {
-        state.rssForm.state = 'failed';
-        state.rssForm.error = err.translationKey;
+        state.rssForm.status = 'failed';
+        state.appError = err.translationKey;
         throw err;
       });
   });
