@@ -35,7 +35,7 @@ export const renderNewFeed = (state, feedsList) => () => {
   feedsList.append(feedContainer);
 };
 
-export const renderNewPosts = (state, postsList) => () => {
+export const renderNewPosts = (state, postsList, dateFormatter) => () => {
   const { lastRenderedPostId } = state.rssList;
   const { activeId } = state.rssList.feedSelection;
   const lastRenderedIndex = findIndex(state.content.posts, ({ id }) => id === lastRenderedPostId);
@@ -67,7 +67,7 @@ export const renderNewPosts = (state, postsList) => () => {
     const footer = document.createElement('div');
     footer.className = 'd-flex w-100 justify-content-between';
     const dateEl = document.createElement('small');
-    dateEl.textContent = `${date.toDateString().slice(0, 10)}, ${date.toTimeString().slice(0, 5)}`;
+    dateEl.textContent = dateFormatter.format(date);
     footer.append(dateEl);
     const sourseFeed = document.createElement('small');
     sourseFeed.textContent = feedTitle;

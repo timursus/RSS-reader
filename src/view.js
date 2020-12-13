@@ -66,7 +66,14 @@ export default (state, elements, t) => {
   const feedsWatchLevel = 1;
   watch(state.content, 'feeds', renderNewFeed(state, feedsList), feedsWatchLevel);
 
-  watch(state.content, 'posts', renderNewPosts(state, postsList));
+  const dateFormatter = new Intl.DateTimeFormat('en', {
+    day: 'numeric',
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+
+  watch(state.content, 'posts', renderNewPosts(state, postsList, dateFormatter));
 
   watch(state.rssList.feedSelection, 'enabled', () => {
     if (state.rssList.feedSelection.enabled) {
